@@ -12,6 +12,7 @@ interface PortfolioData {
     name: string;
     tagline: string;
     description: string;
+    profileImage?: string;
   };
   about: {
     title: string;
@@ -47,7 +48,8 @@ const defaultData: PortfolioData = {
   hero: {
     name: "Divy Yadav",
     tagline: "Problem Solver in Data Science and AI",
-    description: "Passionate about transforming complex data into actionable insights and building intelligent systems that make a difference. I combine analytical thinking with innovative approaches to solve real-world challenges."
+    description: "Passionate about transforming complex data into actionable insights and building intelligent systems that make a difference. I combine analytical thinking with innovative approaches to solve real-world challenges.",
+    profileImage: ""
   },
   about: {
     title: "About Me",
