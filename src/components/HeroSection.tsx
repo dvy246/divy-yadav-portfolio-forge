@@ -11,6 +11,10 @@ interface HeroSectionProps {
     tagline: string;
     description: string;
     profileImage?: string;
+    resumeFile?: string;
+    resumeFileName?: string;
+    githubUrl: string;
+    linkedinUrl: string;
   };
   onContentChange: (field: string, value: string) => void;
 }
@@ -18,6 +22,7 @@ interface HeroSectionProps {
 export const HeroSection = ({ isAdmin, content, onContentChange }: HeroSectionProps) => {
   const [editingField, setEditingField] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const resumeInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -49,6 +54,68 @@ export const HeroSection = ({ isAdmin, content, onContentChange }: HeroSectionPr
 
   const triggerImageUpload = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleResumeUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Check file type (only PDF)
+      if (file.type !== 'application/pdf') {
+        toast.error("Please select a PDF file for your resume.");
+        return;
+      }
+
+      // Check file size (max 10MB for PDF)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("File size too large. Please choose a PDF under 10MB.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        onContentChange('resumeFile', result);
+        onContentChange('resumeFileName', file.name);
+        toast.success("Resume uploaded successfully!");
+      };
+      reader.onerror = () => {
+        toast.error("Error reading file. Please try again.");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerResumeUpload = () => {
+    resumeInputRef.current?.click();
+  };
+
+  const downloadResume = () => {
+    if (content.resumeFile && content.resumeFileName) {
+      const link = document.createElement('a');
+      link.href = content.resumeFile;
+      link.download = content.resumeFileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      toast.error("No resume file uploaded. Please upload a resume first.");
+    }
+  };
+
+  const openGitHub = () => {
+    if (content.githubUrl) {
+      window.open(content.githubUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      toast.error("GitHub URL not set. Please add your GitHub profile URL in admin mode.");
+    }
+  };
+
+  const openLinkedIn = () => {
+    if (content.linkedinUrl) {
+      window.open(content.linkedinUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      toast.error("LinkedIn URL not set. Please add your LinkedIn profile URL in admin mode.");
+    }
   };
 
   const handleEdit = (field: string, value: string) => {
@@ -142,19 +209,68 @@ export const HeroSection = ({ isAdmin, content, onContentChange }: HeroSectionPr
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="glow-primary animate-pulse-glow">
-                <Download className="mr-2" size={20} />
-                Download Resume
-              </Button>
+              <div className="relative">
+                <Button 
+                  size="lg" 
+                  className="glow-primary animate-pulse-glow"
+                  onClick={isAdmin ? triggerResumeUpload : downloadResume}
+                >
+                  <Download className="mr-2" size={20} />
+                  {isAdmin ? 'Upload Resume' : 'Download Resume'}
+                </Button>
+                {isAdmin && (
+                  <div className="absolute top-full left-0 mt-1 text-xs text-muted-foreground">
+                    {content.resumeFileName ? `✓ ${content.resumeFileName}` : 'No resume uploaded'}
+                  </div>
+                )}
+              </div>
               <div className="flex gap-4">
-                <Button variant="outline" size="lg">
-                  <Github className="mr-2" size={20} />
-                  GitHub
-                </Button>
-                <Button variant="outline" size="lg">
-                  <Linkedin className="mr-2" size={20} />
-                  LinkedIn
-                </Button>
+                <div className="relative">
+                  <Button variant="outline" size="lg" onClick={isAdmin ? () => setEditingField('githubUrl') : openGitHub}>
+                    <Github className="mr-2" size={20} />
+                    GitHub
+                  </Button>
+                  {isAdmin && editingField === 'githubUrl' && (
+                    <div className="absolute top-full left-0 mt-2 z-20">
+                      <input
+                        className="w-64 px-3 py-2 bg-card border border-electric-blue rounded text-sm"
+                        placeholder="https://github.com/yourusername"
+                        value={content.githubUrl}
+                        onChange={(e) => onContentChange('githubUrl', e.target.value)}
+                        onBlur={() => setEditingField(null)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            setEditingField(null);
+                          }
+                        }}
+                        autoFocus
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="relative">
+                  <Button variant="outline" size="lg" onClick={isAdmin ? () => setEditingField('linkedinUrl') : openLinkedIn}>
+                    <Linkedin className="mr-2" size={20} />
+                    LinkedIn
+                  </Button>
+                  {isAdmin && editingField === 'linkedinUrl' && (
+                    <div className="absolute top-full left-0 mt-2 z-20">
+                      <input
+                        className="w-64 px-3 py-2 bg-card border border-electric-blue rounded text-sm"
+                        placeholder="https://linkedin.com/in/yourusername"
+                        value={content.linkedinUrl}
+                        onChange={(e) => onContentChange('linkedinUrl', e.target.value)}
+                        onBlur={() => setEditingField(null)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            setEditingField(null);
+                          }
+                        }}
+                        autoFocus
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -203,6 +319,14 @@ export const HeroSection = ({ isAdmin, content, onContentChange }: HeroSectionPr
                       type="file"
                       accept="image/*"
                       onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    
+                    <input
+                      ref={resumeInputRef}
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleResumeUpload}
                       className="hidden"
                     />
                   </>

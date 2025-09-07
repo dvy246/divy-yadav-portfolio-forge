@@ -13,6 +13,10 @@ interface PortfolioData {
     tagline: string;
     description: string;
     profileImage?: string;
+    resumeFile?: string;
+    resumeFileName?: string;
+    githubUrl: string;
+    linkedinUrl: string;
   };
   about: {
     title: string;
@@ -49,7 +53,11 @@ const defaultData: PortfolioData = {
     name: "Divy Yadav",
     tagline: "Problem Solver in Data Science and AI",
     description: "Passionate about transforming complex data into actionable insights and building intelligent systems that make a difference. I combine analytical thinking with innovative approaches to solve real-world challenges.",
-    profileImage: ""
+    profileImage: "",
+    resumeFile: "",
+    resumeFileName: "",
+    githubUrl: "https://github.com/divyyadav",
+    linkedinUrl: "https://linkedin.com/in/divyyadav"
   },
   about: {
     title: "About Me",
